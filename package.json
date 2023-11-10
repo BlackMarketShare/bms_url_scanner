@@ -2,5 +2,7 @@
   "name": "bms_url_scanner",
   "version": "1.0.0",
   "dependencies": {
+    "chromedriver": "^119.0.1",
+    "selenium-webdriver": "^4.15.0"
   }
 }
