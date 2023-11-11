@@ -40,13 +40,14 @@ xpathToMessageMap = {
     "wish.com": [['//*[@id="react-app"]/div/div[6]/div[3]/div/div/div[2]', ['This product is no longer available on Wish']]],
     "made-in-china": [['/html/body/div[7]/div[2]/div[4]/div/div/div[1]/div[1]/h1', ['']]],
     "allegro": [['/html/body/div[2]/div[8]/div/div/div[1]/div/div/div/div/div/div/div/h6', ['Oferta została zakończona']]],
-    "taobao": [['/html/body/center[1]/h1', ['404']]]
+    "taobao": [['/html/body/center[1]/h1', ['404']]],
+    "magaluempresas.com": [['//title', ['Produto não encontrado']]]
 };
 
 defaultXpathMap = [['//title', ['404', 'Not Found', 'Home page']]]
 
 nonHeadlessMarketplaces = ['shopee', 'tokopedia', 'walmart', 'fruugo', 'dhgate', 'etsy', 'americanas', 'meesho',
-    'wish.com', 'made-in-china', 'allegro'];
+    'made-in-china', 'allegro', 'magaluempresas.com'];
 
 async function evaluateUrlUsingXpath(url, xpathToMessagesList, marketplace) {
     let driver;
@@ -67,20 +68,24 @@ async function evaluateUrlUsingXpath(url, xpathToMessagesList, marketplace) {
             let expectedMessages = xpathToMessagesList[i][1];
             try {
                 await driver.get(url);
+                performPreprocess(driver, marketplace);
+                // await new Promise(r => setTimeout(r, 15000));
                 // let googleLogin = await driver.findElement(By.xpath(
                 //     "//button/div[2][text()='Google']"));
                 // googleLogin.click();
-                // await new Promise(r => setTimeout(r, 1000000));
+                // await new Promise(r => setTimeout(r, 40000));
                 // let googleLogin2 = await driver.findElement(By.xpath(
                 //     '//*[@id="view_container"]/div/div/div[2]/div/div[1]/div/form/span/section/div/div/div/div/ul/li[1]/div/div[1]/div'));
+
                 // googleLogin2.click();
-                // shoppeebms@gmail.com
+                // 'shoppeebms@gmail.com'
                 // BlackMarket@2023
                 // shopee
                 // removed tabou link - https://item.taobao.com/auction/noitem.htm?itemid=665851295171&catid=0&spm=a230r.1.14.144.1fa155adWEfu5S&ns=1&abbucket=20#detail
                 // http://love.taobao.com/guang/transfer.htm?src=item_auto&itemid=665851295171&catid=0&ad_id=&jlogid=p09005207fa1b4
 
                 // Wait for the title element and retrieve its text
+                // console.log(await driver.getPageSource());
                 await driver.wait(until.elementLocated(By.xpath(xpath)), 10000); // Wait for up to 10 seconds
                 const titleElement = await driver.findElement(By.xpath(xpath));
                 const xpathValue = await titleElement.getAttribute('textContent');
@@ -101,6 +106,24 @@ async function evaluateUrlUsingXpath(url, xpathToMessagesList, marketplace) {
         await driver.quit();
     }
     return false;
+}
+
+/**
+ * Handles pre-processing such as remove pop-ups/ handle logins, based on the marketplace.
+ *
+ * @param driver
+ * @param marketplace
+ */
+async function performPreprocess(driver, marketplace) {
+    switch (marketplace) {
+        case 'wish.com' :
+            let xpath = '//*[@id="react-app"]/div/div[8]/div[3]/div/div/div[1]';
+            await driver.wait(until.elementLocated(By.xpath(xpath)), 30000);
+            let exitButton = await driver.findElement(By.xpath(xpath));
+            exitButton.click();
+            break;
+    }
+
 }
 
 function fetchMarketPlace(url) {
