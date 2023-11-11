@@ -3,15 +3,17 @@ const chrome = require('selenium-webdriver/chrome');
 const {readFileSync} = require("fs");
 
 xpathToMessageMap = {
-    "ebay": [['//title', ['Error page', 'Error Page', 'foutpagina', 'Fehlerseite']]], // ebay
+    "ebay": [['//title', ['Error page', 'Error Page', 'foutpagina', 'Foutpagina', 'Fehlerseite', 'Página de error',
+        'Remove  | eBay']]], // ebay
     "walmart": [['//*[@id="maincontent"]/div/span', ['This page could not be found.']]], // walmart
     "amazon": [['//title', ['Page Not Found']]], // amazon
-    // "shopee": [['//*[@id="main"]/div/div[2]/div/div/div/div[2]/form/div/div[1]/div]',
+    // "shopee": [['//*[@id="main"]/div/div[2]/div/div/div/div[2]/form/div/div[1]/div',
     //     ['เข้าสู่ระบบ', 'Log In', '登入', 'Log In']]], // add Log In to the list
     "es.aliexpress": [['//title', ['Page Not Found - Aliexpress.com']]],
     "aliexpress": [['//title', ['404', 'Page Not Found', 'campaign']]],
     "alibaba": [['//title', ['This product is no longer available', 'Dit product is niet meer beschikbaar',
-        'Bu ürün artık mevcut değildir','Este produto não está mais disponível']]],
+        'Bu ürün artık mevcut değildir', 'Este produto não está mais disponível', 'この製品はもう利用できません',
+        'इस उत्पाद अब उपलब्ध नहीं है', 'Ce produit n\'est plus disponible', 'Este produto não está mais disponível']]],
     "lazada": [['//title', ['non-existent products']]],
     "joom.com": [['//title', ['Buy at low prices in the Joom online store']]],
     "daraz": [['//title', ['Product not found']]],
@@ -41,35 +43,38 @@ xpathToMessageMap = {
     "made-in-china": [['/html/body/div[7]/div[2]/div[4]/div/div/div[1]/div[1]/h1', ['']]],
     "allegro": [['/html/body/div[2]/div[8]/div/div/div[1]/div/div/div/div/div/div/div/h6', ['Oferta została zakończona']]],
     "taobao": [['/html/body/center[1]/h1', ['404']]],
-    "magaluempresas.com": [['//title', ['Produto não encontrado']]]
+    "magaluempresas.com": [['//title', ['Produto não encontrado']]],
+    "fyndiq": [['//title', ['Fynda billiga produkter']]]
 };
 
 defaultXpathMap = [['//title', ['404', 'Not Found', 'Home page']]]
 
 nonHeadlessMarketplaces = ['shopee', 'tokopedia', 'walmart', 'fruugo', 'dhgate', 'etsy', 'americanas', 'meesho',
-    'made-in-china', 'allegro', 'magaluempresas.com'];
+    'made-in-china', 'allegro', 'magaluempresas.com', 'world.tmon'];
+
+async function fetchDriver(marketplace) {
+    var options = new chrome.Options();
+    if (!nonHeadlessMarketplaces.includes(marketplace)) {
+        options.addArguments('--headless'); // Run in headless mode
+        options.addArguments('--disable-gpu'); // Recommended for headless mode
+    }
+    return new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(options)
+        .build();
+}
 
 async function evaluateUrlUsingXpath(url, xpathToMessagesList, marketplace) {
-    let driver;
+    let driver = await fetchDriver(marketplace);
 
-    if (nonHeadlessMarketplaces.includes(marketplace)) {
-        driver = await new Builder()
-            .forBrowser('chrome')
-            .build();
-    } else {
-        driver = await new Builder()
-            .forBrowser('chrome')
-            .setChromeOptions(new chrome.Options().headless()) // Run in headless mode
-            .build();
-    }
     try {
         for (let i = 0; i < xpathToMessagesList.length; ++i) {
             let xpath = xpathToMessagesList[i][0];
             let expectedMessages = xpathToMessagesList[i][1];
             try {
                 await driver.get(url);
-                performPreprocess(driver, marketplace);
-                // await new Promise(r => setTimeout(r, 15000));
+                // performPreprocess(driver, marketplace);
+                // await new Promise(r => setTimeout(r, 5000));
                 // let googleLogin = await driver.findElement(By.xpath(
                 //     "//button/div[2][text()='Google']"));
                 // googleLogin.click();
@@ -163,14 +168,38 @@ const deadSites = [];
 const sitesTobeCheckedManually = [];
 const marketPlaceSitesToBeConfigured = [];
 
+async function handleWorldTmonUrl(url) {
+    let driver = await fetchDriver('world.tmon');
+    await driver.get(url);
+    try {
+        let message = await driver.switchTo().alert().getText();
+        if (message.includes('현재 사이트에서 구매하실 수 없는 상품입니다. US 사이트로 이동하여 상품을 구매하시겠습니까')
+            || message.includes('죄송합니다. 이 상품은 현재 판매중지된 상품입니다')) {
+            deadSites.push(url);
+        } else {
+            sitesTobeCheckedManually.push(url);
+        }
+        await driver.switchTo().alert().accept();
+    } catch (err) {
+        sitesTobeCheckedManually.push(url);
+        // If no alert is present, an error will be thrown
+        console.log("No alert was present");
+    } finally {
+        await driver.quit();
+    }
+}
+
 async function isURLActive(url) {
+    if (url.includes('world.tmon')) {
+        await handleWorldTmonUrl(url);
+        return;
+    }
     let marketPlace = fetchMarketPlace(url);
     if (marketPlace == null) {
         let isURLRemoved = await evaluateUrlUsingXpath(url, defaultXpathMap, marketPlace);
-        if(!isURLRemoved) {
+        if (!isURLRemoved) {
             marketPlaceSitesToBeConfigured.push(url);
-        }
-        else {
+        } else {
             console.log("standalone site is dead")
             deadSites.push(url)
         }
