@@ -3,7 +3,6 @@ const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
 require('events').EventEmitter.defaultMaxListeners = 0;
 
 // Defines the concurrent urls count to be scanned
-const concurrentLimit = 1;
 
 const deadSites = [];
 const sitesTobeCheckedManually = [];
@@ -28,26 +27,30 @@ function printUrlList(urlList) {
 }
 
 async function classifyURL(url) {
+    console.log(`Evaluating ${url}`)
     let marketPlace = getMarketplaceInfo(url);
     let isURLRemoved = await marketPlace.evaluate(url);
     if (isURLRemoved) {
+        console.log(`URL is dead - ${url}`);
         deadSites.push(url);
     }
-    else if (marketPlace.marketplaceQuery == 'default') {
+    else if (marketPlace.marketplaceQuery === 'default') {
+        console.log(`URL marketplace to be configured - ${url}`);
         marketPlaceSitesToBeConfigured.push(url);
     }
     else {
-        console.log("SitesTobeCheckedManually")
+        console.log(`URL to be checked manually - ${url}`);
         sitesTobeCheckedManually.push(url);
     }
 }
 
-async function classifyURLs(filePath) {
+async function classifyURLs(filePath, concurrentLimit) {
     const file = readFileSync(filePath, 'utf8');
     const urls = file.split(/\r?\n/);
     const promiseList = [];
     for (const url of urls) {
-        if (promiseList.length === concurrentLimit) {
+
+        if (promiseList.length == concurrentLimit) {
             await Promise.all(promiseList);
             promiseList.length = 0;
         }
@@ -63,7 +66,8 @@ async function classifyURLs(filePath) {
 }
 
 // fetching file from command line
-filePath = process.argv[2];
-classifyURLs(filePath)
+const filePath = process.argv[2];
+const concurrentLimit = process.argv[3];
+classifyURLs(filePath, concurrentLimit)
 
 
