@@ -1,7 +1,6 @@
 const {Builder, By, until} = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
-const {readFileSync} = require('fs');
-require('events').EventEmitter.defaultMaxListeners = 0;
+
 
 nonHeadlessMarketplaces = ['shopee', 'tokopedia', 'walmart', 'fruugo', 'dhgate', 'etsy', 'americanas', 'meesho',
     'made-in-china', 'allegro', 'magaluempresas.com', 'world.tmon'];
@@ -25,16 +24,13 @@ class MarketplaceEvaluator {
             await driver.get(url);
             try {
                 let message = await driver.switchTo().alert().getText();
-                if (message.includes('현재 사이트에서 구매하실 수 없는 상품입니다. US 사이트로 이동하여 상품을 구매하시겠습니까')
-                    || message.includes('죄송합니다. 이 상품은 현재 판매중지된 상품입니다')) {
-                    return true;
-                }
+                await driver.switchTo().alert().accept();
+                return !!(message.includes('현재 사이트에서 구매하실 수 없는 상품입니다. US 사이트로 이동하여 상품을 구매하시겠습니까')
+                    || message.includes('죄송합니다. 이 상품은 현재 판매중지된 상품입니다'));
             } catch (err) {
-                sitesTobeCheckedManually.push(url);
                 // If no alert is present, an error will be thrown
                 console.log("No alert was present");
             } finally {
-                await driver.switchTo().alert().accept();
                 await driver.quit();
             }
             return false;
@@ -70,14 +66,11 @@ class MarketplaceEvaluator {
     };
 
     static SHOPEE = {
-        XPATHS: [
-            '//*[@id="main"]/div/div[2]/div/div/div/div[2]/form/div/div[1]/div',
-            '//*[@id="someOtherElementXPath"]',
-        ],
-        MESSAGES: [['เข้าสู่ระบบ', 'Log In', '登入', 'Log In']],
+        XPATHS: [],
+        MESSAGES: [],
         marketplaceQuery: 'shopee',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            return false; // shopee should be checked manually as there is no aumated solution available at the moment.
         },
     };
 
