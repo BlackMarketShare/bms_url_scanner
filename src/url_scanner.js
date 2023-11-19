@@ -54,8 +54,8 @@ async function classifyURLs(filePath, concurrentLimit) {
         promiseList.push(classifyURL(url, evaluatedCount));
         evaluatedCount++;
 
-        // Write data to files every 25 links evaluated
-        if (evaluatedCount % 5 === 0 || evaluatedCount == urlsLength + 1) {
+        // Write data to files every 20 links evaluated
+        if (evaluatedCount % 20 === 0 || evaluatedCount == urlsLength + 1) {
             await Promise.all(promiseList);
             console.log("Writing the links to respective files...")
             // Write dead sites to a file
