@@ -2,8 +2,7 @@ const {Builder, By, until} = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const randomUseragent = require('random-useragent');
 
-nonHeadlessMarketplaces = ['shopee', 'tokopedia', 'walmart', 'fruugo', 'dhgate', 'etsy', 'americanas', 'meesho',
-     'allegro', 'magaluempresas.com'];
+nonHeadlessMarketplaces = ['shopee', 'americanas', 'allegro', 'magaluempresas.com'];
 
 
 // Create an enum-like class for marketplace XPaths and messages
@@ -52,7 +51,10 @@ class MarketplaceEvaluator {
         MESSAGES: [['This page could not be found.']],
         marketplaceQuery: 'walmart',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = randomUseragent.getRandom();
+            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+            await driver.get(url);
+            return await evaluateWithInfo(url, this, driver);
         },
     };
 
@@ -106,7 +108,10 @@ class MarketplaceEvaluator {
         MESSAGES: [['Mungkin kamu salah jalan atau alamat']],
         marketplaceQuery: 'tokopedia',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = 'Mozilla/5.0 (PLAYSTATION 3; 2.00)'
+            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+            await driver.get(url);
+            return await evaluateWithInfo(url, this, driver);
         },
     };
 
@@ -125,7 +130,10 @@ class MarketplaceEvaluator {
             'Tyvärr', 'Lo sentimos', 'Sajnos', 'Pahoittelemme']],
         marketplaceQuery: 'fruugo',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = randomUseragent.getRandom();
+            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+            await driver.get(url);
+            return await evaluateWithInfo(url, this, driver);
         },
     };
 
@@ -151,19 +159,25 @@ class MarketplaceEvaluator {
 
     static DHGATE = {
         XPATHS: ['//title'],
-        MESSAGES: [['error']],
+        MESSAGES: [['error', "This item doesn't exist"]],
         marketplaceQuery: 'dhgate',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0';
+            let driver = await fetchDriver(this.marketplaceQuery, randomUseragent.getRandom());
+            await driver.get(url);
+            return await evaluateWithInfo(url, this, driver);
         },
     };
 
     static ETSY = {
-        XPATHS: ['//*[@id="content"]/div[1]/div[1]/div/div/div/div/p'],
-        MESSAGES: [['this item and shop']],
+        XPATHS: [ '//title', '//*[@id="content"]/div[1]/div[1]/div/div/div/div/p'],
+        MESSAGES: [['This item is unavailable'], ['this item and shop']],
         marketplaceQuery: 'etsy',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = randomUseragent.getRandom();
+            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+            await driver.get(url);
+            return await evaluateWithInfo(url, this, driver);
         },
     };
 
@@ -262,7 +276,10 @@ class MarketplaceEvaluator {
         MESSAGES: [['This product is out of stock']],
         marketplaceQuery: 'meesho',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = randomUseragent.getRandom();
+            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+            await driver.get(url);
+            return await evaluateWithInfo(url, this, driver);
         },
     };
 
@@ -280,8 +297,7 @@ class MarketplaceEvaluator {
                 let exitButton = await driver.findElement(By.xpath(wishXpath));
                 exitButton.click();
                 return await evaluateWithInfo(url, this, driver);
-            }
-            catch (e) {
+            } catch (e) {
                 console.error(`Exception occured while performing pre-processing for wish link - ${url}`, e);
             }
         },
@@ -393,22 +409,26 @@ async function evaluateWithInfo(url, info) {
 async function evaluateWithInfo(url, info, customDriver) {
     let driver = customDriver;
     try {
-        if(driver == null) {
+        if (driver == null) {
             driver = await fetchDriver(info.marketplaceQuery);
             await driver.get(url);
         }
         const {XPATHS, MESSAGES} = info;
         for (let i = 0; i < XPATHS.length; i++) {
-            const xpath = XPATHS[i];
-            const expectedMessages = MESSAGES[i];
-            await driver.wait(until.elementLocated(By.xpath(xpath)), 10000);
-            const titleElement = await driver.findElement(By.xpath(xpath));
-            const xpathValue = await titleElement.getAttribute('textContent');
-            console.log(`The xpath value for ${url} is: ${xpathValue}`);
-            return expectedMessages.some(message => xpathValue.includes(message));
+            try {
+                const xpath = XPATHS[i];
+                const expectedMessages = MESSAGES[i];
+                await driver.wait(until.elementLocated(By.xpath(xpath)), 15000);
+                const titleElement = await driver.findElement(By.xpath(xpath));
+                const xpathValue = await titleElement.getAttribute('textContent');
+                console.log(`The xpath value for ${url} is: ${xpathValue}`);
+                if (expectedMessages.some(message => xpathValue.includes(message))) {
+                    return true;
+                }
+            } catch (error) {
+                console.error(`An error occurred for ${url} during scanning for XPath: ${error}`);
+            }
         }
-    } catch (error) {
-        console.error(`An error occurred for ${url} during scanning for XPath: ${error}`);
     } finally {
         await driver.quit();
     }
@@ -416,7 +436,7 @@ async function evaluateWithInfo(url, info, customDriver) {
 }
 
 async function fetchDriver(marketplace) {
-    return await fetchDriver(marketplace,null);
+    return await fetchDriver(marketplace, null);
 }
 
 async function fetchDriver(marketplace, userAgent) {
@@ -425,7 +445,7 @@ async function fetchDriver(marketplace, userAgent) {
         options.addArguments('--headless'); // Run in headless mode
         options.addArguments('--disable-gpu'); // Recommended for headless mode
     }
-    if(userAgent != null){
+    if (userAgent != null) {
         options.addArguments(`--user-agent=${userAgent}`);
     }
     return new Builder()
