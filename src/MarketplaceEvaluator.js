@@ -1,9 +1,9 @@
 const {Builder, By, until} = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
-
+const randomUseragent = require('random-useragent');
 
 nonHeadlessMarketplaces = ['shopee', 'tokopedia', 'walmart', 'fruugo', 'dhgate', 'etsy', 'americanas', 'meesho',
-    'made-in-china', 'allegro', 'magaluempresas.com', 'world.tmon'];
+     'allegro', 'magaluempresas.com'];
 
 
 // Create an enum-like class for marketplace XPaths and messages
@@ -20,7 +20,7 @@ class MarketplaceEvaluator {
     static WORLD_TMON = {
         marketplaceQuery: 'world.tmon',
         async evaluate(url) {
-            let driver = await fetchDriver('world.tmon');
+            let driver = await fetchDriver('world.tmon', randomUseragent.getRandom());
             await driver.get(url);
             try {
                 let message = await driver.switchTo().alert().getText();
@@ -292,7 +292,10 @@ class MarketplaceEvaluator {
         MESSAGES: [['']],
         marketplaceQuery: 'made-in-china',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/536.26.17 (KHTML like Gecko) Version/6.0.2 Safari/536.26.17';
+            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+            await driver.get(url);
+            return await evaluateWithInfo(url, this, driver);
         },
     };
 
@@ -413,10 +416,17 @@ async function evaluateWithInfo(url, info, customDriver) {
 }
 
 async function fetchDriver(marketplace) {
+    return await fetchDriver(marketplace,null);
+}
+
+async function fetchDriver(marketplace, userAgent) {
     var options = new chrome.Options();
     if (!nonHeadlessMarketplaces.includes(marketplace)) {
         options.addArguments('--headless'); // Run in headless mode
         options.addArguments('--disable-gpu'); // Recommended for headless mode
+    }
+    if(userAgent != null){
+        options.addArguments(`--user-agent=${userAgent}`);
     }
     return new Builder()
         .forBrowser('chrome')

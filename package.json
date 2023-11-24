@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "chromedriver": "^119.0.1",
+    "random-useragent": "^0.5.0",
     "selenium-webdriver": "^4.15.0"
   }
 }
