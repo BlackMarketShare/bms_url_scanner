@@ -2,7 +2,7 @@ const {Builder, By, until} = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const randomUseragent = require('random-useragent');
 
-nonHeadlessMarketplaces = ['shopee', 'americanas', 'allegro', 'magaluempresas.com'];
+nonHeadlessMarketplaces = [];
 
 
 // Create an enum-like class for marketplace XPaths and messages
@@ -22,6 +22,7 @@ class MarketplaceEvaluator {
             let driver = await fetchDriver('world.tmon', randomUseragent.getRandom());
             await driver.get(url);
             try {
+                await driver.get(url);
                 let message = await driver.switchTo().alert().getText();
                 await driver.switchTo().alert().accept();
                 return !!(message.includes('현재 사이트에서 구매하실 수 없는 상품입니다. US 사이트로 이동하여 상품을 구매하시겠습니까')
@@ -51,10 +52,8 @@ class MarketplaceEvaluator {
         MESSAGES: [['This page could not be found.']],
         marketplaceQuery: 'walmart',
         async evaluate(url) {
-            const userAgent = randomUseragent.getRandom();
-            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
-            await driver.get(url);
-            return await evaluateWithInfo(url, this, driver);
+            const userAgent = 'Mozilla/5.0 (Linux; Android 4.0.4; BNTV400 Build/IMM76L) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.111 Safari/537.36';
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -109,9 +108,7 @@ class MarketplaceEvaluator {
         marketplaceQuery: 'tokopedia',
         async evaluate(url) {
             const userAgent = 'Mozilla/5.0 (PLAYSTATION 3; 2.00)'
-            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
-            await driver.get(url);
-            return await evaluateWithInfo(url, this, driver);
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -130,10 +127,8 @@ class MarketplaceEvaluator {
             'Tyvärr', 'Lo sentimos', 'Sajnos', 'Pahoittelemme']],
         marketplaceQuery: 'fruugo',
         async evaluate(url) {
-            const userAgent = randomUseragent.getRandom();
-            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
-            await driver.get(url);
-            return await evaluateWithInfo(url, this, driver);
+            const userAgent = 'Opera/9.80 (Windows NT 6.1; U; en) Presto/2.7.62 Version/11.01';
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -163,9 +158,7 @@ class MarketplaceEvaluator {
         marketplaceQuery: 'dhgate',
         async evaluate(url) {
             const userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0';
-            let driver = await fetchDriver(this.marketplaceQuery, randomUseragent.getRandom());
-            await driver.get(url);
-            return await evaluateWithInfo(url, this, driver);
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -175,9 +168,7 @@ class MarketplaceEvaluator {
         marketplaceQuery: 'etsy',
         async evaluate(url) {
             const userAgent = randomUseragent.getRandom();
-            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
-            await driver.get(url);
-            return await evaluateWithInfo(url, this, driver);
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -276,10 +267,8 @@ class MarketplaceEvaluator {
         MESSAGES: [['This product is out of stock']],
         marketplaceQuery: 'meesho',
         async evaluate(url) {
-            const userAgent = randomUseragent.getRandom();
-            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
-            await driver.get(url);
-            return await evaluateWithInfo(url, this, driver);
+            const userAgent = 'Mozilla/5.0 (compatible; Konqueror/3.5; Linux; en_US) KHTML/3.5.6 (like Gecko) (Kubuntu)';
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -299,7 +288,9 @@ class MarketplaceEvaluator {
                 return await evaluateWithInfo(url, this, driver);
             } catch (e) {
                 console.error(`Exception occured while performing pre-processing for wish link - ${url}`, e);
+                await driver.quit();
             }
+            return false;
         },
     };
 
@@ -309,18 +300,18 @@ class MarketplaceEvaluator {
         marketplaceQuery: 'made-in-china',
         async evaluate(url) {
             const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/536.26.17 (KHTML like Gecko) Version/6.0.2 Safari/536.26.17';
-            let driver = await fetchDriver(this.marketplaceQuery, userAgent);
-            await driver.get(url);
-            return await evaluateWithInfo(url, this, driver);
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
     static ALLEGRO = {
-        XPATHS: ['/html/body/div[2]/div[8]/div/div/div[1]/div/div/div/div/div/div/div/h6'],
-        MESSAGES: [['Oferta została zakończona']],
+        XPATHS: ['/html/body/div[2]/div[2]/div/div[4]/div/div/div[2]/div/div/div/div/div/div/div/h3',
+            '/html/body/div[2]/div[8]/div/div/div[1]/div/div/div/div/div/div/div/h6'],
+        MESSAGES: [['Oferta archiwalna. Zobacz aktualne oferty'], ['Oferta została zakończona']],
         marketplaceQuery: 'allegro',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = randomUseragent.getRandom();
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -336,7 +327,7 @@ class MarketplaceEvaluator {
     static MAGALUEMPRESAS = {
         XPATHS: ['//title'],
         MESSAGES: [['Produto não encontrado']],
-        marketplaceQuery: 'magaluempresas',
+        marketplaceQuery: 'magaluempresas.com',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
         },
@@ -400,6 +391,18 @@ class MarketplaceEvaluator {
     };
 
     // Add more marketplaces here
+}
+
+async function evaluateWithUserAgent(url, info, userAgent) {
+    console.log(userAgent);
+    let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+    try {
+        await driver.get(url);
+        return await evaluateWithInfo(url, info, driver);
+    } catch (error) {
+        await driver.quit();
+        return false;
+    }
 }
 
 async function evaluateWithInfo(url, info) {
