@@ -442,8 +442,10 @@ async function fetchDriver(marketplace) {
 async function fetchDriver(marketplace, userAgent) {
     var options = new chrome.Options();
     if (!nonHeadlessMarketplaces.includes(marketplace)) {
+        options.addArguments('--no-sandbox');
         options.addArguments('--headless'); // Run in headless mode
         options.addArguments('--disable-gpu'); // Recommended for headless mode
+        options.addArguments('--disable-dev-shm-usage');
     }
     if (userAgent != null) {
         options.addArguments(`--user-agent=${userAgent}`);
