@@ -170,7 +170,7 @@ class MarketplaceEvaluator {
     };
 
     static ETSY = {
-        XPATHS: [ '//title', '//*[@id="content"]/div[1]/div[1]/div/div/div/div/p'],
+        XPATHS: ['//title', '//*[@id="content"]/div[1]/div[1]/div/div/div/div/p'],
         MESSAGES: [['This item is unavailable'], ['this item and shop']],
         marketplaceQuery: 'etsy',
         async evaluate(url) {
@@ -429,6 +429,8 @@ async function evaluateWithInfo(url, info, customDriver) {
                 console.error(`An error occurred for ${url} during scanning for XPath: ${error}`);
             }
         }
+    } catch (error) {
+        console.error(`An error occurred for ${url} during scanning for XPath: ${error}`);
     } finally {
         await driver.quit();
     }
