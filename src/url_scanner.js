@@ -1,5 +1,6 @@
 const {readFileSync} = require('fs');
 const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
+const {clearFileContents,appendToFile} = require('./util/file_util');
 require('events').EventEmitter.defaultMaxListeners = 0;
 const fs = require('fs');
 
@@ -59,19 +60,14 @@ async function classifyURLs(filePath, concurrentLimit) {
             await Promise.all(promiseList);
             console.log("Writing the links to respective files...")
             // Write dead sites to a file
-            fs.writeFile(`${outputDir}/deadSites.txt`,
-                deadSites.join('\n'), {}, () => {
-                });
+            appendToFile(`${outputDir}/deadSites.txt`, deadSites.join('\n'));
 
             // Write sites to be checked manually to a file
-            fs.writeFile(`${outputDir}/sitesTobeCheckedManually.txt`,
-                sitesTobeCheckedManually.join('\n'), {}, () => {
-                });
+            appendToFile(`${outputDir}/sitesTobeCheckedManually.txt`, sitesTobeCheckedManually.join('\n'));
 
             // Write marketplaces to be configured to a file
-            fs.writeFile(`${outputDir}/marketPlaceSitesToBeConfigured.txt`,
-                marketPlaceSitesToBeConfigured.join('\n'), {}, () => {
-                });
+            appendToFile(`${outputDir}/marketPlaceSitesToBeConfigured.txt`,
+                marketPlaceSitesToBeConfigured.join('\n'));
 
             // Clear the arrays after writing
             deadSites.length = 0;
@@ -96,11 +92,16 @@ if (!fs.existsSync(outputDir)) {
     fs.mkdir(outputDir, {recursive: true}, (err) => {
         if (err) {
             console.error('Error creating directory:', err);
+            throw err;
         } else {
             console.log('Directory created:', outputDir);
         }
     });
 }
+clearFileContents(`${outputDir}/deadSites.txt`);
+clearFileContents(`${outputDir}/sitesTobeCheckedManually.txt`);
+clearFileContents(`${outputDir}/marketPlaceSitesToBeConfigured.txt`);
+
 const filePath = 'src/input/' + client;
 
 classifyURLs(filePath, concurrentLimit).then(() => {
