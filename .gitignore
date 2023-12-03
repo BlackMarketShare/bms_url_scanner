@@ -1,3 +1,4 @@
 .idea
 src/reqsources/scan
 test.js
+output/*

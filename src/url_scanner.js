@@ -59,25 +59,19 @@ async function classifyURLs(filePath, concurrentLimit) {
             await Promise.all(promiseList);
             console.log("Writing the links to respective files...")
             // Write dead sites to a file
-            fs.appendFileSync('src/output/deadSites.txt',
-                deadSites.join('\n'));
-            if (deadSites.length != 0) {
-                fs.appendFileSync('src/output/deadSites.txt', '\n');
-            }
+            fs.writeFile(`${outputDir}/deadSites.txt`,
+                deadSites.join('\n'), {}, () => {
+                });
 
             // Write sites to be checked manually to a file
-            fs.appendFileSync('src/output/sitesTobeCheckedManually.txt',
-                sitesTobeCheckedManually.join('\n'));
-            if (sitesTobeCheckedManually.length != 0) {
-                fs.appendFileSync('src/output/sitesTobeCheckedManually.txt', '\n');
-            }
+            fs.writeFile(`${outputDir}/sitesTobeCheckedManually.txt`,
+                sitesTobeCheckedManually.join('\n'), {}, () => {
+                });
 
             // Write marketplaces to be configured to a file
-            fs.appendFileSync('src/output/marketPlaceSitesToBeConfigured.txt',
-                marketPlaceSitesToBeConfigured.join('\n'));
-            if (marketPlaceSitesToBeConfigured.length != 0) {
-                fs.appendFileSync('src/output/marketPlaceSitesToBeConfigured.txt', '\n');
-            }
+            fs.writeFile(`${outputDir}/marketPlaceSitesToBeConfigured.txt`,
+                marketPlaceSitesToBeConfigured.join('\n'), {}, () => {
+                });
 
             // Clear the arrays after writing
             deadSites.length = 0;
@@ -89,12 +83,25 @@ async function classifyURLs(filePath, concurrentLimit) {
 }
 
 // fetching file from command line
-const filePath = process.argv[2];
+const client = process.argv[2];
 let concurrentLimit = process.argv[3];
 if (concurrentLimit == null) {
     concurrentLimit = 5;
     console.log(`Setting url batch size scan count as ${concurrentLimit}`);
 }
+
+const outputDir = 'src/output/' + client;
+if (!fs.existsSync(outputDir)) {
+    fs.mkdir(outputDir, {recursive: true}, (err) => {
+        if (err) {
+            console.error('Error creating directory:', err);
+        } else {
+            console.log('Directory created:', outputDir);
+        }
+    });
+}
+const filePath = 'src/input/' + client;
+
 classifyURLs(filePath, concurrentLimit)
 
 
