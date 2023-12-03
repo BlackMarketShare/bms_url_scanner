@@ -1,6 +1,6 @@
 const {readFileSync} = require('fs');
 const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
-const {clearFileContents,appendToFile} = require('./util/file_util');
+const {clearFileContents, appendToFile} = require('./util/file_util');
 require('events').EventEmitter.defaultMaxListeners = 0;
 const fs = require('fs');
 
@@ -26,7 +26,13 @@ function getMarketplaceInfo(url) {
 async function classifyURL(url, evaluatedCount) {
     console.log(`${evaluatedCount}. Evaluating ${url}`)
     let marketPlace = getMarketplaceInfo(url);
-    let isURLRemoved = await marketPlace.evaluate(url);
+    let isURLRemoved;
+    try {
+        isURLRemoved = await marketPlace.evaluate(url);
+    } catch (error) {
+        console.log(`An error occurred for ${url} during scanning for XPath: ${error}`);
+        isURLRemoved = false;
+    }
     if (isURLRemoved) {
         console.log(`URL is dead - ${url}`);
         deadSites.push(url);
