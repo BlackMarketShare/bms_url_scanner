@@ -82,6 +82,7 @@ async function classifyURLs(filePath, concurrentLimit) {
     }
 }
 
+const start = Date.now();
 // fetching file from command line
 const client = process.argv[2];
 let concurrentLimit = process.argv[3];
@@ -102,6 +103,11 @@ if (!fs.existsSync(outputDir)) {
 }
 const filePath = 'src/input/' + client;
 
-classifyURLs(filePath, concurrentLimit)
+classifyURLs(filePath, concurrentLimit).then(() => {
+    const end = Date.now();
+    const executionTime = (end - start) / 1000;
+    console.log(`Execution time: ${executionTime} seconds`);
+});
+
 
 
