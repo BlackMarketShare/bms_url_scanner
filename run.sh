@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$1" ]; then
+    echo "Error: batch size not provided."
+    exit 1
+fi
+
 # Add client names here and also in sr/input folder
 client_names=("beer_buddy" "grill_rescue" "haute_diggite_dog" "springer_pets" "strojo" "uproot")
 
