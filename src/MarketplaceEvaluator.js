@@ -57,6 +57,16 @@ class MarketplaceEvaluator {
         },
     };
 
+    static MAGAZINELUIZA = {
+        XPATHS: ['//*[@id="__next"]/div/main/section[2]/div[1]/div/div/div/h1'],
+        MESSAGES: [['Não encontramos essa página']],
+        marketplaceQuery: 'magazineluiza',
+        async evaluate(url) {
+            return await evaluateWithInfo(url, this);
+        },
+
+    };
+
     static AMAZON = {
         XPATHS: ['//title'],
         MESSAGES: [['Page Not Found']],
@@ -124,7 +134,7 @@ class MarketplaceEvaluator {
     static FRUUGO = {
         XPATHS: ['//title'],
         MESSAGES: [['no longer available', 'Lamentamos', 'Spiacenti', 'Désolé', 'Λυπούμαστε', 'Beklager', 'Sorry',
-            'Tyvärr', 'Lo sentimos', 'Sajnos', 'Pahoittelemme']],
+            'Tyvärr', 'Lo sentimos', 'Sajnos', 'Pahoittelemme', 'عذراً، المُنتْج الذي تبحث عنه لم يعد متوفراً | Fruugo']],
         marketplaceQuery: 'fruugo',
         async evaluate(url) {
             const userAgent = 'Opera/9.80 (Windows NT 6.1; U; en) Presto/2.7.62 Version/11.01';
