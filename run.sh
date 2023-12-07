@@ -9,5 +9,6 @@ for name in "${client_names[@]}"; do
     sudo node --trace-warnings src/url_scanner.js "$name" "$1" > ./"$name" 2>&1
 
     # Remove the temporary Chromium files
+    sudo ps -ef |  grep chromium | awk '{print $2}' | xargs kill
     sudo rm -rf /tmp/.org.chromium.Chromiu*
 done
