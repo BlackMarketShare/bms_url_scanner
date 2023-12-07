@@ -38,9 +38,9 @@ class MarketplaceEvaluator {
     };
 
     static EBAY = {
-        XPATHS: ['//title'],
+        XPATHS: ['//title', '/html/body/div[2]/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div/div/div/span'],
         MESSAGES: [['Error page', 'Error Page', 'foutpagina', 'Foutpagina', 'Fehlerseite', 'Página de error',
-            'Remove  | eBay']],
+            'Remove  | eBay'], ['This listing ended', 'This listing was ended']],
         marketplaceQuery: 'ebay',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
