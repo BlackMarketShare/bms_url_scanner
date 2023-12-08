@@ -8,7 +8,7 @@ if [ -z "$1" ]; then
 fi
 
 # Add client names here and also in sr/input folder
-#client_names=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "STOJO" "UPROOT")
+client_names=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "STOJO" "UPROOT")
 
 # Loop through each client
 for name in "${client_names[@]}"; do
