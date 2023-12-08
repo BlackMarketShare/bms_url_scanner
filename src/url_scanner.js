@@ -1,6 +1,7 @@
 const {readFileSync} = require('fs');
 const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
 const {clearFileContents, appendToFile} = require('./util/file_util');
+const fetchDataFromClientSheet = require('./util/google_sheets_accessor');
 require('events').EventEmitter.defaultMaxListeners = 0;
 const fs = require('fs');
 
@@ -45,9 +46,13 @@ async function classifyURL(url, evaluatedCount) {
     }
 }
 
-async function classifyURLs(filePath, concurrentLimit) {
+async function classifyURLsfromFilePath(filePath, concurrentLimit) {
     const file = readFileSync(filePath, 'utf8');
     const urls = file.split(/\r?\n/);
+    await classifyURLs(urls, concurrentLimit);
+}
+
+async function classifyURLs(urls, concurrentLimit) {
     const promiseList = [];
     let evaluatedCount = 1;
     let urlsLength = urls.length;
@@ -104,17 +109,28 @@ if (!fs.existsSync(outputDir)) {
         }
     });
 }
-clearFileContents(`${outputDir}/deadSites.txt`);
-clearFileContents(`${outputDir}/sitesTobeCheckedManually.txt`);
-clearFileContents(`${outputDir}/marketPlaceSitesToBeConfigured.txt`);
 
 const filePath = 'src/input/' + client;
 
-classifyURLs(filePath, concurrentLimit).then(() => {
-    const end = Date.now();
-    const executionTime = (end - start) / 1000;
-    console.log(`Execution time: ${executionTime} seconds`);
-});
+fetchDataFromClientSheet(client).then(urls => {
+    classifyURLs(urls, concurrentLimit).then(() => {
+        const end = Date.now();
+        const executionTime = (end - start) / 1000;
+        console.log(`Execution time: ${executionTime} seconds`);
+    });
+})
+// console.log(urls);
+
+// classifyURLs(await fetchDataFromClientSheet(),concurrentLimit).then(() => {
+//     const end = Date.now();
+//     const executionTime = (end - start) / 1000;
+//     console.log(`Execution time: ${executionTime} seconds`);
+// });
+// classifyURLsfromFilePath(filePath, concurrentLimit).then(() => {
+//     const end = Date.now();
+//     const executionTime = (end - start) / 1000;
+//     console.log(`Execution time: ${executionTime} seconds`);
+// });
 
 
 
