@@ -27,7 +27,7 @@ async function fetchDataFromClientSheet(client) {
         }
 
         let response = await gsapi.spreadsheets.values.get(opt);
-        console.log("Total url count: {}",response.data.values.length);
+        console.log(`Total url count: - ${response.data.values.length}`);
 
         return response.data.values.flat().
         filter(url => url.startsWith('http'));

@@ -1,6 +1,6 @@
 const {readFileSync} = require('fs');
 const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
-const {clearFileContents, appendToFile} = require('./util/file_util');
+const {getCurrentDateForFilename, appendToFile} = require('./util/file_util');
 const fetchDataFromClientSheet = require('./util/google_sheets_accessor');
 require('events').EventEmitter.defaultMaxListeners = 0;
 const fs = require('fs');
@@ -71,13 +71,14 @@ async function classifyURLs(urls, concurrentLimit) {
             await Promise.all(promiseList);
             console.log("Writing the links to respective files...")
             // Write dead sites to a file
-            appendToFile(`${outputDir}/deadSites.txt`, deadSites.join('\n'));
+            appendToFile(`${outputDir}/deadSites_${getCurrentDateForFilename()}.txt`, deadSites.join('\n'));
 
             // Write sites to be checked manually to a file
-            appendToFile(`${outputDir}/sitesTobeCheckedManually.txt`, sitesTobeCheckedManually.join('\n'));
+            appendToFile(`${outputDir}/sitesTobeCheckedManually_${getCurrentDateForFilename()}.txt`,
+                sitesTobeCheckedManually.join('\n'));
 
             // Write marketplaces to be configured to a file
-            appendToFile(`${outputDir}/marketPlaceSitesToBeConfigured.txt`,
+            appendToFile(`${outputDir}/marketPlaceSitesToBeConfigured_${getCurrentDateForFilename()}.txt`,
                 marketPlaceSitesToBeConfigured.join('\n'));
 
             // Clear the arrays after writing

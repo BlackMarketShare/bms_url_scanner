@@ -25,8 +25,14 @@ function appendToFile(filePath, content) {
     });
 }
 
+function getCurrentDateForFilename() {
+    const now = new Date();
+    return now.toISOString().split('T')[0]; // This will give a date in 'YYYY-MM-DD' format
+}
+
 // Export the functions
 module.exports = {
     clearFileContents,
+    getCurrentDateForFilename,
     appendToFile
 };
