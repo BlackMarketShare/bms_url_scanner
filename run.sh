@@ -1,12 +1,14 @@
 #!/bin/bash
 
+current_date=$(date "+%Y-%m-%d")
+
 if [ -z "$1" ]; then
     echo "Error: batch size not provided."
     exit 1
 fi
 
 # Add client names here and also in sr/input folder
-client_names=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "STOJO" "UPROOT")
+#client_names=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "STOJO" "UPROOT")
 
 # Loop through each client
 for name in "${client_names[@]}"; do
@@ -17,3 +19,6 @@ for name in "${client_names[@]}"; do
     sudo ps -ef |  grep chromium | awk '{print $2}' | xargs kill
     sudo rm -rf /tmp/.org.chromium.Chromiu*
 done
+
+# create a report for the day
+sh report.sh > src/reports/report_${current_date}
