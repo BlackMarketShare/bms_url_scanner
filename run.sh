@@ -23,4 +23,4 @@ done
 # create a report for the day
 sh report.sh > src/reports/report_${current_date}
 # mail the report for the day
-echo "Report for ${current_date}" | s-nail -s "BMS Scanner report ${current_date}" -r "BMS Scanner <desertjones404@gmail.com>" -a src/reports/report_${current_date} scott@blackmarketshare.com nethmie@blackmarketshare.com
+echo "Report for ${current_date}" | s-nail -s "BMS Scanner report ${current_date}" -r "BMS Scanner <desertjones404@gmail.com>" -a src/reports/report_${current_date} scott@blackmarketshare.com nethmie@blackmarketshare.com brad@blackmarketshare.com
