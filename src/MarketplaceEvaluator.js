@@ -104,8 +104,8 @@ class MarketplaceEvaluator {
     };
 
     static LAZADA = {
-        XPATHS: ['//title'],
-        MESSAGES: [['non-existent products']],
+        XPATHS: ['/html/body/div[2]/div/h3','//title'],
+        MESSAGES: [['This product is no longer available'],['non-existent products']],
         marketplaceQuery: 'lazada',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
@@ -193,7 +193,7 @@ class MarketplaceEvaluator {
 
     static CATCH = {
         XPATHS: ['//title'],
-        MESSAGES: [['Great daily deals at Australia\'s favourite superstore']],
+        MESSAGES: [['Great daily deals at Australia\'s favourite superstore',' Uh-Oh!']],
         marketplaceQuery: 'catch',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
