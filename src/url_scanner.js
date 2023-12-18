@@ -1,6 +1,7 @@
 const {readFileSync} = require('fs');
 const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
 const {getCurrentDateForFilename, appendToFile} = require('./util/file_util');
+const {shuffleArray} = require('./util/commons');
 const fetchDataFromClientSheet = require('./util/google_sheets_accessor');
 require('events').EventEmitter.defaultMaxListeners = 0;
 const fs = require('fs');
@@ -114,6 +115,8 @@ if (!fs.existsSync(outputDir)) {
 const filePath = 'src/input/' + client;
 
 fetchDataFromClientSheet(client).then(urls => {
+    // Randomize the order of the URLs
+    shuffleArray(urls);
     classifyURLs(urls, concurrentLimit).then(() => {
         const end = Date.now();
         const executionTime = (end - start) / 1000;
