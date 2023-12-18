@@ -192,8 +192,8 @@ class MarketplaceEvaluator {
     };
 
     static CATCH = {
-        XPATHS: ['//title'],
-        MESSAGES: [['Great daily deals at Australia\'s favourite superstore',' Uh-Oh!']],
+        XPATHS: ['//title','//*[@id="maincontent"]/div/main/div/h1'],
+        MESSAGES: [['Great daily deals at Australia\'s favourite superstore','404']],
         marketplaceQuery: 'catch',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
