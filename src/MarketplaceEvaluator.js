@@ -96,7 +96,10 @@ class MarketplaceEvaluator {
 
     static ALIBABA = {
         XPATHS: ['//title'],
-        MESSAGES: [['This product is no longer available', 'Dit product is niet meer beschikbaar', 'Bu ürün artık mevcut değildir', 'Este produto não está mais disponível', 'この製品はもう利用できません', 'इस उत्पाद अब उपलब्ध नहीं है', 'Ce produit n\'est plus disponible', 'Este produto não está mais disponível']],
+        MESSAGES: [['This product is no longer available', 'Dit product is niet meer beschikbaar',
+            'Bu ürün artık mevcut değildir', 'Este produto não está mais disponível',
+            'この製品はもう利用できません', 'इस उत्पाद अब उपलब्ध नहीं है', 'Ce produit n\'est plus disponible',
+            'Este produto não está mais disponível', '이 제품은 더 이상 사용할 수 없습니다', 'Alibaba.com Select']],
         marketplaceQuery: 'alibaba',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
@@ -107,6 +110,15 @@ class MarketplaceEvaluator {
         XPATHS: ['/html/body/div[2]/div/h3','//title'],
         MESSAGES: [['This product is no longer available'],['non-existent products']],
         marketplaceQuery: 'lazada',
+        async evaluate(url) {
+            return await evaluateWithInfo(url, this);
+        },
+    };
+
+    static PROM = {
+        XPATHS: ['//*[@id="page-block"]/div/div[2]/div/div[1]/div/div[2]/div[1]/span'],
+        MESSAGES: [['Оо! Сторінка не знайдена']],
+        marketplaceQuery: 'prom.ua',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
         },
@@ -134,7 +146,8 @@ class MarketplaceEvaluator {
     static FRUUGO = {
         XPATHS: ['//title'],
         MESSAGES: [['no longer available', 'Lamentamos', 'Spiacenti', 'Désolé', 'Λυπούμαστε', 'Beklager', 'Sorry',
-            'Tyvärr', 'Lo sentimos', 'Sajnos', 'Pahoittelemme', 'عذراً، المُنتْج الذي تبحث عنه لم يعد متوفراً | Fruugo']],
+            'Tyvärr', 'Lo sentimos', 'Sajnos', 'Pahoittelemme', 'عذراً، المُنتْج الذي تبحث عنه لم يعد متوفراً | Fruugo',
+        'Ne pare rău, produsul căutat nu mai este disponibil']],
         marketplaceQuery: 'fruugo',
         async evaluate(url) {
             const userAgent = 'Opera/9.80 (Windows NT 6.1; U; en) Presto/2.7.62 Version/11.01';
@@ -262,6 +275,15 @@ class MarketplaceEvaluator {
             return await evaluateWithInfo(url, this);
         },
     };
+
+    // static GMARKET = {
+    //     XPATHS: ['//*[@id="header"]/div[1]/h1/a'],
+    //     MESSAGES: [['Gmarket']],
+    //     marketplaceQuery: 'global.gmarket',
+    //     async evaluate(url) {
+    //         return await evaluateWithInfo(url, this);
+    //     },
+    // };
 
     static TIKTOK = {
         XPATHS: ['//*[@id="root"]/div/div[1]/div/div[1]'],
