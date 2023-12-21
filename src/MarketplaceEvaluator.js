@@ -12,7 +12,8 @@ class MarketplaceEvaluator {
         MESSAGES: [['404', 'Not Found', 'Home page']],
         marketplaceQuery: 'default',
         async evaluate(url) {
-            return await evaluateWithInfo(url, this);
+            const userAgent = randomUseragent.getRandom();
+            return await evaluateWithUserAgent(url, this, userAgent);
         },
     };
 
@@ -77,10 +78,13 @@ class MarketplaceEvaluator {
     };
 
     static SHOPEE = {
-        XPATHS: [],
-        MESSAGES: [],
+        XPATHS: ['//*[@id="main"]/div/div[2]/div[1]/div/div/div/div'],
+        MESSAGES: [['The product doesn\'t exist']],
         marketplaceQuery: 'shopee',
         async evaluate(url) {
+            // const userAgent = randomUseragent.getRandom();
+            // return await evaluateWithUserAgent(url, this, userAgent);
+            // // return await evaluateWithInfo(url, this);
             return false; // shopee should be checked manually as there is no aumated solution available at the moment.
         },
     };
@@ -99,7 +103,9 @@ class MarketplaceEvaluator {
         MESSAGES: [['This product is no longer available', 'Dit product is niet meer beschikbaar',
             'Bu ürün artık mevcut değildir', 'Este produto não está mais disponível',
             'この製品はもう利用できません', 'इस उत्पाद अब उपलब्ध नहीं है', 'Ce produit n\'est plus disponible',
-            'Este produto não está mais disponível', '이 제품은 더 이상 사용할 수 없습니다', 'Alibaba.com Select']],
+            'Este produto não está mais disponível', '이 제품은 더 이상 사용할 수 없습니다', 'Alibaba.com Select',
+             'Produk ini sudah tidak tersedia lagi', 'สินค้าตัวนี้ไม่มีแล้วครับ', 'Этот продукт больше не доступен',
+              'Sản phẩm này là không còn có sẵn']],
         marketplaceQuery: 'alibaba',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
@@ -276,14 +282,23 @@ class MarketplaceEvaluator {
         },
     };
 
-    // static GMARKET = {
-    //     XPATHS: ['//*[@id="header"]/div[1]/h1/a'],
-    //     MESSAGES: [['Gmarket']],
-    //     marketplaceQuery: 'global.gmarket',
-    //     async evaluate(url) {
-    //         return await evaluateWithInfo(url, this);
-    //     },
-    // };
+    static GMARKET = {
+        XPATHS: ['//*[@id="gnb"]/li[1]/a'],
+        MESSAGES: [['Brand Fashion']],
+        marketplaceQuery: 'global.gmarket',
+        async evaluate(url) {
+            return await evaluateWithInfo(url, this);
+        },
+    };
+
+    static SHOPABUNDA = {
+        XPATHS: ['/html/body/div[2]/main/div/section/h3'],
+        MESSAGES: [['Something isn\'t right']],
+        marketplaceQuery: 'shopabunda',
+        async evaluate(url) {
+            return await evaluateWithInfo(url, this);
+        },
+    };
 
     static TIKTOK = {
         XPATHS: ['//*[@id="root"]/div/div[1]/div/div[1]'],
@@ -427,7 +442,7 @@ class MarketplaceEvaluator {
 
 async function evaluateWithUserAgent(url, info, userAgent) {
     console.log(userAgent);
-    let driver = await fetchDriver(this.marketplaceQuery, userAgent);
+    let driver = await fetchDriver(info.marketplaceQuery, userAgent);
     try {
         await driver.get(url);
         return await evaluateWithInfo(url, info, driver);
