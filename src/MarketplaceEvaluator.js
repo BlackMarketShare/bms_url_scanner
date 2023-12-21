@@ -39,9 +39,10 @@ class MarketplaceEvaluator {
     };
 
     static EBAY = {
-        XPATHS: ['//title', '/html/body/div[2]/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div/div/div/span'],
+        XPATHS: ['//title', '/html/body/div[2]/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div/div/div/span',
+                 '/html/body/div[2]/div[2]/div[1]/div[2]/div/div/div[1]/div/div/div/div/div/span'],
         MESSAGES: [['Error page', 'Error Page', 'foutpagina', 'Foutpagina', 'Fehlerseite', 'Página de error',
-            'Remove  | eBay'], ['This listing ended', 'This listing was ended']],
+            'Remove  | eBay'], ['This listing ended', 'This listing was ended'],['This listing was ended by the seller']],
         marketplaceQuery: 'ebay',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
@@ -98,6 +99,16 @@ class MarketplaceEvaluator {
         },
     };
 
+    static CAROUSELL = {
+        XPATHS: ['//*[@id="main"]/div[1]/div[1]/p'],
+        MESSAGES: [['This listing is currently not available']],
+        marketplaceQuery: 'carousell',
+        async evaluate(url) {
+            const userAgent = randomUseragent.getRandom();
+            return await evaluateWithUserAgent(url, this, userAgent);
+        },
+    };
+
     static ALIBABA = {
         XPATHS: ['//title'],
         MESSAGES: [['This product is no longer available', 'Dit product is niet meer beschikbaar',
@@ -105,7 +116,7 @@ class MarketplaceEvaluator {
             'この製品はもう利用できません', 'इस उत्पाद अब उपलब्ध नहीं है', 'Ce produit n\'est plus disponible',
             'Este produto não está mais disponível', '이 제품은 더 이상 사용할 수 없습니다', 'Alibaba.com Select',
              'Produk ini sudah tidak tersedia lagi', 'สินค้าตัวนี้ไม่มีแล้วครับ', 'Этот продукт больше не доступен',
-              'Sản phẩm này là không còn có sẵn']],
+              'Sản phẩm này là không còn có sẵn', 'Este producto ya no está disponible']],
         marketplaceQuery: 'alibaba',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
