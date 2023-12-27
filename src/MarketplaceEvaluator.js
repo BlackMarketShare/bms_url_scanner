@@ -19,15 +19,15 @@ class MarketplaceEvaluator {
 
     static WORLD_TMON = {
         marketplaceQuery: 'world.tmon',
+        MESSAGES: ['현재 사이트에서 구매하실 수 없는 상품입니다. US 사이트로 이동하여 상품을 구매하시겠습니까',
+            '죄송합니다. 이 상품은 현재 판매중지된 상품입니다'],
         async evaluate(url) {
-            let driver = await fetchDriver('world.tmon', randomUseragent.getRandom());
-            await driver.get(url);
+            let driver = await fetchDriver(this.marketplaceQuery, randomUseragent.getRandom());
             try {
                 await driver.get(url);
-                let message = await driver.switchTo().alert().getText();
+                let outputText = await driver.switchTo().alert().getText();
                 await driver.switchTo().alert().accept();
-                return !!(message.includes('현재 사이트에서 구매하실 수 없는 상품입니다. US 사이트로 이동하여 상품을 구매하시겠습니까')
-                    || message.includes('죄송합니다. 이 상품은 현재 판매중지된 상품입니다'));
+                return this.MESSAGES.some(message => outputText.includes(message));
             } catch (err) {
                 // If no alert is present, an error will be thrown
                 console.log("No alert was present");
@@ -38,11 +38,33 @@ class MarketplaceEvaluator {
         },
     };
 
+    static UNIT808 = {
+        marketplaceQuery: 'unit808',
+        MESSAGES: ['해당 상품은 품절되었거나 삭제된 상품입니다'],
+        async evaluate(url) {
+            let driver = await fetchDriver(this.marketplaceQuery);
+            try {
+                await driver.get(url);
+                let outputText = await driver.switchTo().alert().getText();
+                await driver.switchTo().alert().accept();
+                return this.MESSAGES.some(message => outputText.includes(message));
+            } catch (err) {
+                // If no alert is present, an error will be thrown
+                console.error("No alert was present",err);
+            } finally {
+                await driver.quit();
+            }
+            return false;
+        },
+    };
+
     static EBAY = {
-        XPATHS: ['//title', '/html/body/div[2]/div[2]/div[1]/div[2]/div/div/div[2]/div/div/div/div/div/span',
-                 '/html/body/div[2]/div[2]/div[1]/div[2]/div/div/div[1]/div/div/div/div/div/span'],
+        XPATHS: ['//title', '/html/body/div[2 or 3]/div[2]/div[1]/div[2]/div/div/div[1 or 2]/div/div/div/div/div/span',
+        '/html/body/div[2]/div[2]/div[1]/div[2]/div/div/div[1]/div/div[2]/div/span[1]/span'],
         MESSAGES: [['Error page', 'Error Page', 'foutpagina', 'Foutpagina', 'Fehlerseite', 'Página de error',
-            'Remove  | eBay'], ['This listing ended', 'This listing was ended'],['This listing was ended by the seller']],
+            'Remove  | eBay'],
+                   ['This listing ended', 'This listing was ended','This listing was ended by the seller',
+                   'Dieses Angebot wurde', 'Bieten endete am'],['Dieser Artikel ist nicht vorrätig']],
         marketplaceQuery: 'ebay',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
