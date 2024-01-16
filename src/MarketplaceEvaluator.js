@@ -9,7 +9,7 @@ nonHeadlessMarketplaces = [];
 class MarketplaceEvaluator {
     static DEFAULT = {
         XPATHS: ['//title'],
-        MESSAGES: [['Not Found', 'Home page']],
+        MESSAGES: [['Not Found', 'Home page', 'Error']],
         marketplaceQuery: 'default',
         async evaluate(url) {
             const userAgent = randomUseragent.getRandom();
