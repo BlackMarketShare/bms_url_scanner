@@ -16,13 +16,20 @@ const marketPlaceSitesToBeConfigured = [];
 // Create a function to get the marketplace information based on the URL
 function getMarketplaceInfo(url) {
     const marketplaceKeys = Object.keys(MarketplaceEvaluator);
+    let longestMatch = null;
+    let longestMatchLength = 0;
+
     for (const key of marketplaceKeys) {
         const marketplace = MarketplaceEvaluator[key];
         if (url.includes(marketplace.marketplaceQuery)) {
-            return marketplace;
+            if (marketplace.marketplaceQuery.length > longestMatchLength) {
+                longestMatch = marketplace;
+                longestMatchLength = marketplace.marketplaceQuery.length;
+            }
         }
     }
-    return MarketplaceEvaluator['DEFAULT'];
+
+    return longestMatch ? longestMatch : MarketplaceEvaluator['DEFAULT'];
 }
 
 async function classifyURL(url, evaluatedCount) {
