@@ -9,7 +9,7 @@ nonHeadlessMarketplaces = [];
 class MarketplaceEvaluator {
     static DEFAULT = {
         XPATHS: ['//title'],
-        MESSAGES: [['Not Found', 'Home page', 'Error']],
+        MESSAGES: [['Not Found', 'Home page', 'Error', 'Website unavailable']],
         marketplaceQuery: 'default',
         async evaluate(url) {
             const userAgent = randomUseragent.getRandom();
@@ -138,10 +138,10 @@ class MarketplaceEvaluator {
             'この製品はもう利用できません', 'इस उत्पाद अब उपलब्ध नहीं है', 'Ce produit n\'est plus disponible',
             'Este produto não está mais disponível', '이 제품은 더 이상 사용할 수 없습니다', 'Alibaba.com Select',
              'Produk ini sudah tidak tersedia lagi', 'สินค้าตัวนี้ไม่มีแล้วครับ', 'Этот продукт больше не доступен',
-              'Sản phẩm này là không còn có sẵn', 'Este producto ya no está disponible', '该产品不再可用',
+              'Sản phẩm này là không còn có sẵn', 'Este producto ya no está disponible', '该产品不再可用。',
                'Dieses Produkt ist nicht mehr verfügbar', 'Questo prodotto non è più disponibile.'],
                   ['Oops! We can\'t find the page you\'re looking for.']],
-        marketplaceQuery: 'alibaba',
+        marketplaceQuery: 'alibaba.com',
         async evaluate(url) {
             return await evaluateWithInfo(url, this);
         },
