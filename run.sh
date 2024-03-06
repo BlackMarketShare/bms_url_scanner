@@ -28,4 +28,4 @@ sh log_cleanup.sh
 
 
 # mail the report for the day
-echo "Report for ${current_date}" | s-nail -s "BMS Scanner report ${current_date}" -r "BMS Scanner <desertjones404@gmail.com>" -a src/reports/report_${current_date} scott@blackmarketshare.com nethmie@blackmarketshare.com brad@blackmarketshare.com theomherrero@gmail.com
+echo "Report for ${current_date}" | s-nail -s "BMS Scanner report ${current_date}" -r "BMS Scanner <desertjones404@gmail.com>" -a src/reports/report_${current_date} scott@blackmarketshare.com brad@blackmarketshare.com theomherrero@gmail.com
