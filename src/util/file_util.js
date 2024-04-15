@@ -25,6 +25,18 @@ function appendToFile(filePath, content) {
     });
 }
 
+function clearFile(filePath) {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(filePath, '', (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
 function getCurrentDateForFilename() {
     const now = new Date();
     return now.toISOString().split('T')[0]; // This will give a date in 'YYYY-MM-DD' format
@@ -34,5 +46,6 @@ function getCurrentDateForFilename() {
 module.exports = {
     clearFileContents,
     getCurrentDateForFilename,
-    appendToFile
+    appendToFile,
+    clearFile
 };

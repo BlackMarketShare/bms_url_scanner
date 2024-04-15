@@ -13,7 +13,7 @@ client_names=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "S
 # Loop through each client
 for name in "${client_names[@]}"; do
     # Run the node command with the current client name
-    sudo node --trace-warnings src/url_scanner.js "$name" "$1" > ./"$name" 2>&1
+    sudo node --trace-warnings src/dashboard_scanner.js "$name" "$1" > ./"$name" 2>&1
 
     # Remove the temporary Chromium files
     sudo ps -ef |  grep chromium | awk '{print $2}' | xargs kill
@@ -28,4 +28,4 @@ sh log_cleanup.sh
 
 
 # mail the report for the day
-echo "Report for ${current_date}" | s-nail -s "BMS Sheets Scanner report ${current_date}" -r "BMS Scanner <desertjones404@gmail.com>" -a src/reports/report_${current_date} scott@blackmarketshare.com brad@blackmarketshare.com theomherrero@gmail.com
+echo "Report for ${current_date}" | s-nail -s "BMS dashboard Scanner report ${current_date}" -r "BMS Scanner <desertjones404@gmail.com>" -a src/reports/report_${current_date} scott@blackmarketshare.com brad@blackmarketshare.com theomherrero@gmail.com
