@@ -1,5 +1,5 @@
-const { MarketplaceEvaluator } = require('./MarketplaceEvaluator');
-const { getCurrentDateForFilename, appendToFile, clearFile } = require('./util/file_util');
+const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
+const {getCurrentDateForFilename, appendToFile, clearFile} = require('./util/file_util');
 require('events').EventEmitter.defaultMaxListeners = 0;
 const fs = require('fs');
 const axios = require('axios');
@@ -28,13 +28,6 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
-function clearOutputFiles() {
-    // Function to clear output files at the beginning of the script
-    const dateSuffix = getCurrentDateForFilename();
-    clearFile(`${outputDir}/deadSites_${dateSuffix}.txt`);
-    clearFile(`${outputDir}/sitesTobeCheckedManually_${dateSuffix}.txt`);
-    clearFile(`${outputDir}/marketPlaceSitesToBeConfigured_${dateSuffix}.txt`);
-}
 
 // Create a function to get the marketplace information based on the URL
 function getMarketplaceInfo(url) {
@@ -67,13 +60,13 @@ async function classifyURL(urlObj, evaluatedCount) {
     }
     if (isURLRemoved) {
         console.log(`URL is dead - ${urlObj.link}`);
-        deadSites.push({ url: urlObj.link, id: urlObj.id });
+        deadSites.push({url: urlObj.link, id: urlObj.id});
     } else if (marketPlace.marketplaceQuery === 'default') {
         console.log(`URL marketplace to be configured - ${urlObj.link}`);
-        marketPlaceSitesToBeConfigured.push({ url: urlObj.link, id: urlObj.id });
+        marketPlaceSitesToBeConfigured.push({url: urlObj.link, id: urlObj.id});
     } else {
         console.log(`URL to be checked manually - ${urlObj.link}`);
-        sitesTobeCheckedManually.push({ url: urlObj.link, id: urlObj.id });
+        sitesTobeCheckedManually.push({url: urlObj.link, id: urlObj.id});
     }
 }
 
@@ -84,7 +77,10 @@ function stringifyObjects(objects) {
 
 
 async function classifyURLs(urls, concurrentLimit) {
-    clearOutputFiles();
+    const dateSuffix = getCurrentDateForFilename();
+    clearFile(`${outputDir}/deadSites_${dateSuffix}.txt`);
+    clearFile(`${outputDir}/sitesTobeCheckedManually_${dateSuffix}.txt`);
+    clearFile(`${outputDir}/marketPlaceSitesToBeConfigured_${dateSuffix}.txt`);
     const promiseList = [];
     let evaluatedCount = 1;
     let urlsLength = urls.length;
@@ -125,10 +121,11 @@ async function classifyURLs(urls, concurrentLimit) {
         }
     }
 }
+
 (async () => {
     const start = Date.now();
     if (!fs.existsSync(outputDir)) {
-        fs.mkdir(outputDir, { recursive: true }, (err) => {
+        fs.mkdir(outputDir, {recursive: true}, (err) => {
             if (err) {
                 console.error('Error creating directory:', err);
                 throw err;
@@ -139,24 +136,22 @@ async function classifyURLs(urls, concurrentLimit) {
     }
 
 
-    let clientInfringmentURLS = await fetchClientData(client);
-    if (clientInfringmentURLS && clientInfringmentURLS.length > 0) {
-        // Evaluate the links
-        classifyURLs(clientInfringmentURLS, concurrentLimit).then(() => {
-            const end = Date.now();
-            const executionTime = (end - start) / 1000;
-            console.log(`Execution time: ${executionTime} seconds`);
-        });
-    }
+    let clientInfringementURLS = await fetchClientData(client);
+    console.log(`Total url count: - ${clientInfringementURLS.length}`);
+    // Evaluate the links
+    classifyURLs(clientInfringementURLS, concurrentLimit).then(() => {
+        const end = Date.now();
+        const executionTime = (end - start) / 1000;
+        console.log(`Execution time: ${executionTime} seconds`);
+    });
 })();
 
 
 async function fetchClientData(clientName) {
     try {
         const response = await axios.get(`${process.env.BASE_URL}bmsScannerHandler?infringementStatus=${encodeURIComponent('Submitted for removal')}&clientName=${encodeURIComponent(clientName)}`,
-            { headers }
+            {headers}
         );
-        console.log(response.data);
         if (!response.data) {
             console.log('Unable to perform actions. Exit....');
             return;
@@ -164,6 +159,7 @@ async function fetchClientData(clientName) {
         return response.data;
     } catch (error) {
         console.error('Error:', error);
+        return [];
     }
 }
 
@@ -171,16 +167,17 @@ async function batchInfringementStatus(infringementObjects, infringmentStatus) {
     // map with status
     try {
         const requestData = {
-            infringementUpdates: infringementObjects.map(obj => ({ id: obj.id, newStatus: infringmentStatus }))
+            infringementUpdates: infringementObjects.map(obj => ({id: obj.id, newStatus: infringmentStatus}))
         };
         const response = await axios.post(`${process.env.BASE_URL}bmsScannerHandler`, requestData,
-            { headers }
+            {headers}
         );
         console.log('Response After updating the data', response.data);
     } catch (error) {
         console.error('Error:', error);
     }
 }
+
 async function updateInfringementStatus(infringementObjects) {
     await batchInfringementStatus(infringementObjects, 'Removed');
 }

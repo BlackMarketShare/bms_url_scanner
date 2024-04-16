@@ -25,7 +25,9 @@ do
        do
            # Check if it's a file and not a directory and contains the current date
            if [ -f "$file" ] && [[ $file == *"$current_date"* ]]; then
+
              # deleting the file
+               echo "Deleting: $file"
                rm "$file"
            fi
        done

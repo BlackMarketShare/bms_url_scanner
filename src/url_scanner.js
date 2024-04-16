@@ -1,6 +1,6 @@
 const {readFileSync} = require('fs');
 const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
-const {getCurrentDateForFilename, appendToFile} = require('./util/file_util');
+const {getCurrentDateForFilename, appendToFile, clearFile} = require('./util/file_util');
 const {shuffleArray} = require('./util/commons');
 const fetchDataFromClientSheet = require('./util/google_sheets_accessor');
 require('events').EventEmitter.defaultMaxListeners = 0;
@@ -61,6 +61,10 @@ async function classifyURLsfromFilePath(filePath, concurrentLimit) {
 }
 
 async function classifyURLs(urls, concurrentLimit) {
+    const dateSuffix = getCurrentDateForFilename();
+    clearFile(`${outputDir}/deadSites_${dateSuffix}.txt`);
+    clearFile(`${outputDir}/sitesTobeCheckedManually_${dateSuffix}.txt`);
+    clearFile(`${outputDir}/marketPlaceSitesToBeConfigured_${dateSuffix}.txt`);
     const promiseList = [];
     let evaluatedCount = 1;
     let urlsLength = urls.length;
