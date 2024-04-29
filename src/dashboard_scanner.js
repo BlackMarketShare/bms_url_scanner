@@ -76,7 +76,7 @@ function stringifyObjects(objects) {
 }
 
 
-async function classifyURLs(urls, concurrentLimit) {
+async function classifyURLs(urls, concurrentLimit, infringementStatus) {
     const dateSuffix = getCurrentDateForFilename();
     clearFile(`${outputDir}/deadSites_${dateSuffix}.txt`);
     clearFile(`${outputDir}/sitesTobeCheckedManually_${dateSuffix}.txt`);
@@ -110,8 +110,15 @@ async function classifyURLs(urls, concurrentLimit) {
             appendToFile(`${outputDir}/marketPlaceSitesToBeConfigured_${getCurrentDateForFilename()}.txt`,
                 stringifyObjects(marketPlaceSitesToBeConfigured));
 
-            //need to call api to update the statuses
-            await updateInfringementStatus(deadSites);
+            //need to call api to update the statuses of Removed Links
+            if (infringementStatus == 'Removed') {
+                await updateInfringementStatus(deadSites, infringementStatus);
+            }
+            else {
+                // Merge sitesTobeCheckedManually and marketPlaceSitesToBeConfigured arrays
+                const sitesToBeUpdated = [...sitesTobeCheckedManually, ...marketPlaceSitesToBeConfigured];
+                await updateInfringementStatus(sitesToBeUpdated, infringementStatus);
+            }
 
             // Clear the arrays after writing
             deadSites.length = 0;
@@ -138,8 +145,28 @@ async function classifyURLs(urls, concurrentLimit) {
 
     let clientInfringementURLS = await fetchClientData(client);
     console.log(`Total url count: - ${clientInfringementURLS.length}`);
-    // Evaluate the links
-    classifyURLs(clientInfringementURLS, concurrentLimit).then(() => {
+
+    // need to seperate removed and submit for removal links
+    const { removedStatusURLs, submittedStatusURLs } = clientInfringementURLS.reduce((acc, item) => {
+        if (item.infringementStatus === "Removed") {
+            acc.removedStatusURLs.push(item);
+        } else if (item.infringementStatus === "Submitted for removal") {
+            acc.submittedStatusURLs.push(item);
+        }
+        return acc;
+    }, { removedStatusURLs: [], submittedStatusURLs: [] });
+
+    // Evaluate the links For Removed Ones
+    classifyURLs(submittedStatusURLs, concurrentLimit, 'Removed').then(() => {
+        console.log('Checked SubmitForRemoval Links that they are Removed or Not');
+        const end = Date.now();
+        const executionTime = (end - start) / 1000;
+        console.log(`Execution time: ${executionTime} seconds`);
+    });
+
+    // this is for checking if Removed Statuses are live again
+    classifyURLs(removedStatusURLs, concurrentLimit, 'Approved').then(() => {
+        console.log('Checked Removed Links that they are Removed or Live again');
         const end = Date.now();
         const executionTime = (end - start) / 1000;
         console.log(`Execution time: ${executionTime} seconds`);
@@ -149,7 +176,7 @@ async function classifyURLs(urls, concurrentLimit) {
 
 async function fetchClientData(clientName) {
     try {
-        const response = await axios.get(`${process.env.BASE_URL}bmsScannerHandler?infringementStatus=${encodeURIComponent('Submitted for removal')}&clientName=${encodeURIComponent(clientName)}`,
+        const response = await axios.get(`${process.env.BASE_URL}bmsScannerHandler?infringementStatus=${encodeURIComponent('Submitted for removal')}&infringementStatus2=${encodeURIComponent('Removed')}&clientName=${encodeURIComponent(clientName)}`,
             {headers}
         );
         if (!response.data) {
@@ -178,6 +205,6 @@ async function batchInfringementStatus(infringementObjects, infringmentStatus) {
     }
 }
 
-async function updateInfringementStatus(infringementObjects) {
-    await batchInfringementStatus(infringementObjects, 'Removed');
+async function updateInfringementStatus(infringementObjects, infringementStatus) {
+    await batchInfringementStatus(infringementObjects, infringementStatus);
 }
