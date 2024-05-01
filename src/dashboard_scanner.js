@@ -149,7 +149,7 @@ async function classifyURLs(urls, concurrentLimit) {
 
 async function fetchClientData(clientName) {
     try {
-        const response = await axios.get(`${process.env.BASE_URL}bmsScannerHandler?infringementStatus=${encodeURIComponent('Submitted for removal')}&clientName=${encodeURIComponent(clientName)}`,
+        const response = await axios.get(`${process.env.BASE_URL}bmsScannerHandler?clientName=${encodeURIComponent(clientName)}`,
             {headers}
         );
         if (!response.data) {
