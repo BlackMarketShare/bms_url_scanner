@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of directory names
-directories=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "STOJO" "UPROOT") # Replace with your directory names
+directories=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "UPROOT") # Replace with your directory names
 
 # Get current date in the desired format (adjust the format as needed)
 current_date=$(date "+%Y-%m-%d")

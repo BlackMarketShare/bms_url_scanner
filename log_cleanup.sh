@@ -8,7 +8,7 @@ current_date=$(date -d "-$days_ago days" "+%Y-%m-%d")
 # deleting the report
 echo y | rm src/reports/report_${current_date}
 
-client_names=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "STOJO" "UPROOT")
+client_names=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "UPROOT")
 
 # Base directory where client directories are located
 base_dir="src/output"
