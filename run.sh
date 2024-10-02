@@ -33,14 +33,26 @@ fi
 
 # Loop through each client
 for name in "${client_names[@]}"; do
+    # Remove leading and trailing whitespace from the client name
+    name=$(echo "$name" | xargs)
+    
     echo "Processing client: $name"
+    
     # Run the node command with the current client name
-     node  src/url_scanner.js "$name" "$1" > ./"$name" 2>&1
+    node src/url_scanner.js "$name" "$1" > ./"$name" 2>&1
 
+    # Check if the node command was successful
+    if [ $? -eq 0 ]; then
+        echo "Processing of $name completed successfully."
+    else
+        echo "Error processing $name." >&2
+    fi
+    
     # Remove the temporary Chromium files
-    sudo ps -ef |  grep chromium | awk '{print $2}' | xargs kill
+    sudo ps -ef | grep '[c]hromium' | awk '{print $2}' | xargs -r sudo kill
     sudo rm -rf /tmp/.org.chromium.Chromiu*
 done
+
 
 # # create a report for the day
 sh report.sh > src/reports/report_${current_date}
