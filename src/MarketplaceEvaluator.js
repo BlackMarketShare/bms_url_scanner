@@ -472,6 +472,15 @@ class MarketplaceEvaluator {
         },
     };
 
+    static BUYEE = {
+        XPATHS: ['//title'],
+        MESSAGES: [['403 Forbidden'], ['Error | Buyee, an Online Proxy Shopping Service']],
+        marketplaceQuery: 'buyee',
+        async evaluate(url) {
+            return await evaluateWithInfo(url, this);
+        },
+    };
+
     // Add more marketplaces here
 }
 

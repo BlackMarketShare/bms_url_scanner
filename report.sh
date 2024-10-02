@@ -1,7 +1,31 @@
 #!/bin/bash
 
+# PostgreSQL credentials
+PGHOST="aws-0-us-west-1.pooler.supabase.com"
+PGPORT="5432"
+PGDATABASE="postgres"
+PGUSER="postgres.qgmhsfgatjzbdxxiqnhq"
+PGPASSWORD="r3XyvQUkUjJPPATXBZoXoinE6try1LwdF2Osf6KgILk="
+export PGPASSWORD=$PGPASSWORD
+
+# Query to get client names
+query='SELECT DISTINCT "clientName" FROM "User" WHERE "clientName" != '\''BMS'\'';'
+
+# Fetch client names from PostgreSQL and handle each line individually
+directories=()
+while IFS= read -r line; do
+    # Trim any leading/trailing whitespace (optional) and add the client name to the array
+    directories+=("$line")
+done < <(psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -t -c "$query")
+
+if [ ${#directories[@]} -eq 0 ]; then
+    echo "Error: No client names found in the database."
+    exit 1
+fi
+
+
 # List of directory names
-directories=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "UPROOT") # Replace with your directory names
+# directories=("GRILL_RESCUE" "BEER_BUDDY" "HAUTE_DIGGITE_DOG" "SPRINGER_PETS" "UPROOT") # Replace with your directory names
 
 # Get current date in the desired format (adjust the format as needed)
 current_date=$(date "+%Y-%m-%d")

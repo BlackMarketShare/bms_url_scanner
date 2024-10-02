@@ -1,0 +1,189 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["jsonProtocol"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // uses connection pooling
+  directUrl = env("DIRECT_URL") // uses a direct connection
+}
+
+model User {
+  id                  String                @id @default(cuid())
+  name                String
+  email               String                @unique
+  password            String
+  role                String
+  clientName          String
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+  lastAccessedAt      DateTime?             @map("last_accessed_at")
+  InfringementHistory InfringementHistory[]
+  LoginLogoutHistory  LoginLogoutHistory[]
+  userType            String?
+  deletedAt           DateTime?             @map("deleted_at")
+  phoneNo             String?
+  ClientDetails       ClientDetails[] // One sales agent can have multiple clients
+  DamageRecovery      DamageRecovery[]
+}
+
+model Infringment {
+  id                  String                @id @default(cuid())
+  link                String
+  infringementStatus  String                @default("To be reviewed")
+  redLink             Boolean               @default(false)
+  clientName          String
+  productSKU          String? // SKU field for the product
+  additionalInfo      Json? // additional
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+  InfringementHistory InfringementHistory[]
+  ipType              String?
+  isScreenshotTaken   Boolean               @default(false)
+  isFlagged           Boolean               @default(false)
+  InfringementDataCache InfringementDataCache?
+  isScrapped          Boolean               @default(false)
+  DamageRecovery     DamageRecovery?
+}
+
+model InfringementHistory {
+  id                 String      @id @default(cuid())
+  infringement       Infringment @relation(fields: [infringementId], references: [id])
+  user               User        @relation(fields: [submittedBy], references: [id])
+  infringementId     String
+  submittedBy        String
+  operationPerformed String
+  additionalInfo     Json?
+  createdAt          DateTime    @default(now()) @map("created_at")
+  removedAt          DateTime?   @map("removed_at")
+}
+
+model AuthorizedInfringement {
+  id         String  @id @default(cuid())
+  link       String
+  clientName String
+  productSKU String? // SKU field for the product
+}
+
+model BlockListedMarketplace {
+  id                         String   @id @default(cuid())
+  clientName                 String   @unique
+  blockListedMarketplaceList String[] // Changed to a list of strings
+}
+
+model LoginLogoutHistory {
+  id         String   @id @default(cuid())
+  actionTime DateTime
+  actionType String
+  user       User     @relation(fields: [user_id], references: [id])
+  user_id    String
+}
+
+model ClientEmailRecipients{
+    id                 String   @id @default(cuid()) @unique
+    clientName         String   
+    emails             String // emails that needs to be sent
+    type               String
+    frequency          String? @default("1")
+    lastRemainderEmail DateTime?
+}
+
+model InfringementDataCache {
+  id                 String      @id @default(cuid())
+  infringement       Infringment @relation(fields: [infringementId], references: [id])
+  infringementId     String @unique
+  imageURL           String
+  sellerName         String
+  createdAt          DateTime    @default(now()) @map("created_at")
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  email      String 
+  expiresAt  DateTime
+  createdAt  DateTime @default(now()) @map("created_at")
+}
+
+model ClientDetails {
+  id                     String   @id @default(cuid())
+  salesPersonUserId      String?   
+  user                   User?    @relation(fields: [salesPersonUserId], references: [id])
+  clientName             String   @unique
+  monthlyPayment         String?
+  firstMonthAmount       String?
+  logo                   String?
+  firstMonthPaymentDate  DateTime?
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt      @map("updated_at")
+}
+
+model ProductSKU {
+    id         String   @id @default(cuid())
+    clientName String   
+    skuName    String
+    sku        String
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt      @map("updated_at")
+    deletedAt  DateTime?                @map("deleted_at")
+}
+
+model DamageRecovery {
+  id                 String   @id @default(cuid())
+  infringement       Infringment @relation(fields: [infringementId], references: [id])
+  user               User        @relation(fields: [submittedBy], references: [id])
+  infringementId     String @unique
+  email              String
+  name               String 
+  ipType             String
+  ipPath             String
+  marketPlace        String
+  isRecovered        Boolean @default(false)
+  amountPaid         String?
+  submittedBy        String
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt      @map("updated_at")
+  DamageRecoveryEmail DamageRecoveryEmail[]
+}
+
+model DamageRecoveryEmail {
+  id                 String   @id @default(cuid())
+  DamageRecovery     DamageRecovery @relation(fields: [damageRecoveryId], references: [id])
+  damageRecoveryId   String
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt      @map("updated_at")
+}
+
+model ManualAdjustInfringement{
+  id                 String   @id @default(cuid())
+  noOfListings       String
+  screenshotPath     String
+  dateRemoved        DateTime
+  marketPlaceName    String
+  clientName         String
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt      @map("updated_at")
+}
+
+model ClientOnboarding{
+    id                String   @id @default(cuid())
+    businessName      String  
+    businessPhoneNo   String
+    ownerName         String
+    ownerId           String
+    docLink           String
+    additionalInfo    String?
+    clientName        String
+    createdAt         DateTime @default(now()) @map("created_at")
+    updatedAt         DateTime @updatedAt      @map("updated_at")
+}
+
+model TrademarkDetection{
+    id                String   @id @default(cuid())
+    clientName        String
+    wordMark          String
+    productSKU        String?
+    createdAt         DateTime @default(now()) @map("created_at")
+    updatedAt         DateTime @updatedAt      @map("updated_at")
+}

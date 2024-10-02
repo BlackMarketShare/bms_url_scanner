@@ -1,14 +1,15 @@
 const {readFileSync} = require('fs');
 const {MarketplaceEvaluator} = require('./MarketplaceEvaluator');
 const {getCurrentDateForFilename, appendToFile, clearFile} = require('./util/file_util');
-const {shuffleArray} = require('./util/commons');
-const fetchDataFromClientSheet = require('./util/google_sheets_accessor');
 require('events').EventEmitter.defaultMaxListeners = 0;
 const fs = require('fs');
+const fetchDataFromDB = require('./util/db_operations');
+const { prisma } = require('../prisma/prisma');
 
 // Defines the concurrent urls count to be scanned
 
 const deadSites = [];
+const deadSitesWithId = [];
 const sitesTobeCheckedManually = [];
 const marketPlaceSitesToBeConfigured = [];
 
@@ -33,24 +34,25 @@ function getMarketplaceInfo(url) {
 }
 
 async function classifyURL(url, evaluatedCount) {
-    console.log(`${evaluatedCount}. Evaluating ${url}`)
-    let marketPlace = getMarketplaceInfo(url);
+    console.log(`${evaluatedCount}. Evaluating ${url.link}`)
+    let marketPlace = getMarketplaceInfo(url.link);
     let isURLRemoved;
     try {
-        isURLRemoved = await marketPlace.evaluate(url);
+        isURLRemoved = await marketPlace.evaluate(url.link);
     } catch (error) {
         console.log(`An error occurred for ${url} during scanning for XPath: ${error}`);
         isURLRemoved = false;
     }
     if (isURLRemoved) {
-        console.log(`URL is dead - ${url}`);
-        deadSites.push(url);
+        console.log(`URL is dead - ${url.link}`);
+        deadSites.push(url.link);
+        deadSitesWithId.push(url)
     } else if (marketPlace.marketplaceQuery === 'default') {
-        console.log(`URL marketplace to be configured - ${url}`);
-        marketPlaceSitesToBeConfigured.push(url);
+        console.log(`URL marketplace to be configured - ${url.link}`);
+        marketPlaceSitesToBeConfigured.push(url.link);
     } else {
-        console.log(`URL to be checked manually - ${url}`);
-        sitesTobeCheckedManually.push(url);
+        console.log(`URL to be checked manually - ${url.link}`);
+        sitesTobeCheckedManually.push(url.link);
     }
 }
 
@@ -93,8 +95,13 @@ async function classifyURLs(urls, concurrentLimit) {
             appendToFile(`${outputDir}/marketPlaceSitesToBeConfigured_${getCurrentDateForFilename()}.txt`,
                 marketPlaceSitesToBeConfigured.join('\n'));
 
+            if (deadSites.length > 0) {
+                await updateInfringementStatus(deadSitesWithId);
+            }
+
             // Clear the arrays after writing
             deadSites.length = 0;
+            deadSitesWithId.length = 0;
             sitesTobeCheckedManually.length = 0;
             marketPlaceSitesToBeConfigured.length = 0;
             promiseList.length = 0;
@@ -107,11 +114,12 @@ const start = Date.now();
 const client = process.argv[2];
 let concurrentLimit = process.argv[3];
 if (concurrentLimit == null) {
-    concurrentLimit = 5;
+    concurrentLimit = 10;
     console.log(`Setting url batch size scan count as ${concurrentLimit}`);
 }
 
-const outputDir = 'src/output/' + client;
+const outputDir = 'src/output/' + client?.trim();
+console.log(client);
 if (!fs.existsSync(outputDir)) {
     fs.mkdir(outputDir, {recursive: true}, (err) => {
         if (err) {
@@ -125,27 +133,63 @@ if (!fs.existsSync(outputDir)) {
 
 const filePath = 'src/input/' + client;
 
-fetchDataFromClientSheet(client).then(urls => {
+
+fetchDataFromDB(client).then(urls => {
     // Randomize the order of the URLs
-    shuffleArray(urls);
+    // shuffleArray(urls);
     classifyURLs(urls, concurrentLimit).then(() => {
         const end = Date.now();
         const executionTime = (end - start) / 1000;
         console.log(`Execution time: ${executionTime} seconds`);
     });
 })
-// console.log(urls);
 
-// classifyURLs(await fetchDataFromClientSheet(),concurrentLimit).then(() => {
-//     const end = Date.now();
-//     const executionTime = (end - start) / 1000;
-//     console.log(`Execution time: ${executionTime} seconds`);
-// });
-// classifyURLsfromFilePath(filePath, concurrentLimit).then(() => {
-//     const end = Date.now();
-//     const executionTime = (end - start) / 1000;
-//     console.log(`Execution time: ${executionTime} seconds`);
-// });
 
+async function batchInfringementStatus(infringementObjects, infringementStatus) {
+   
+    try {
+        // Log the incoming parameters
+        console.log('Infringement Objects:', infringementObjects);
+        console.log('Infringement Status:', infringementStatus);
+
+        // Update the infringement status in the database
+        const updatedEntries = await prisma.infringment.updateMany({
+            where: {
+                id: {
+                    in: infringementObjects.map(obj => obj.id)
+                }
+            },
+            data: {
+                infringementStatus: 'Removed' 
+            }
+        });
+        console.log('Updated Entries:', updatedEntries);
+
+        // Prepare the history entries
+        const dbEntries = infringementObjects.map(request => ({
+            infringementId: request.id,
+            submittedBy: '0',
+            operationPerformed: 'Removed',
+            removedAt: new Date()
+        }));
+
+        console.log('DB Entries to be created:', dbEntries);
+
+        if (dbEntries.length > 0) {
+            const historyResponse = await prisma.infringementHistory.createMany({
+                data: dbEntries
+            });
+            console.log('History Entries Created:', historyResponse);
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+
+async function updateInfringementStatus(infringementObjects) {
+    await batchInfringementStatus(infringementObjects, 'Removed');
+}
 
 

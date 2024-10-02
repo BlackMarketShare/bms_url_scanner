@@ -2,11 +2,15 @@
   "name": "bms_url_scanner",
   "version": "1.0.0",
   "dependencies": {
+    "@prisma/client": "^5.19.1",
     "axios": "^1.6.8",
     "chromedriver": "^119.0.1",
     "dotenv": "^16.4.5",
     "googleapis": "^129.0.0",
     "random-useragent": "^0.5.0",
     "selenium-webdriver": "^4.15.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.19.1"
   }
 }
