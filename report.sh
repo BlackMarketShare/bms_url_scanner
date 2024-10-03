@@ -35,7 +35,7 @@ for dir in "${directories[@]}"
 do
     # Construct the deadSites file path
     dead_sites_file="src/output/${dir}/deadSites_${current_date}.txt"
-
+    dir=$(echo "$dir" | xargs)
     echo "Directory: $dir"
 
     # Check if the main file exists
