@@ -137,12 +137,21 @@ const filePath = 'src/input/' + client;
 fetchDataFromDB(client).then(urls => {
     // Randomize the order of the URLs
     // shuffleArray(urls);
-    classifyURLs(urls, concurrentLimit).then(() => {
+
+     // Filter out Alibaba and Amazon URLs
+     const filteredUrls = urls.filter(url => {
+        return !url.link?.toLowerCase().includes('alibaba') && !url.link?.toLowerCase().includes('amazon');
+    });
+
+    console.log(`Total filtered urls: - ${filteredUrls.length}`);
+
+    classifyURLs(filteredUrls, concurrentLimit).then(() => {
         const end = Date.now();
         const executionTime = (end - start) / 1000;
         console.log(`Execution time: ${executionTime} seconds`);
     });
-})
+});
+
 
 
 async function batchInfringementStatus(infringementObjects, infringementStatus) {
