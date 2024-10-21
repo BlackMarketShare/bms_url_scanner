@@ -505,8 +505,8 @@ async function evaluateWithInfo(url, info, customDriver) {
 
     // If the URL is from AliExpress, remove the query or search params
     const aliExpressRegex = /^https?:\/\/([a-zA-Z0-9-]+\.)?aliexpress\.[a-z]{2,}/;
-    console.log('this is aliexpress url', url);
     if (aliExpressRegex.test(url)) {
+    console.log('this is aliexpress url', url);
         const urlObj = new URL(url);
         urlObj.search = ''; // Clear the search params
         url = urlObj.toString();
