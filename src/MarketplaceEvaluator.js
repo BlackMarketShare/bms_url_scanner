@@ -502,12 +502,23 @@ async function evaluateWithInfo(url, info) {
 
 async function evaluateWithInfo(url, info, customDriver) {
     let driver = customDriver;
+
+    // If the URL is from AliExpress, remove the query or search params
+    const aliExpressRegex = /^https?:\/\/([a-zA-Z0-9-]+\.)?aliexpress\.[a-z]{2,}/;
+    console.log('this is aliexpress url', url);
+    if (aliExpressRegex.test(url)) {
+        const urlObj = new URL(url);
+        urlObj.search = ''; // Clear the search params
+        url = urlObj.toString();
+        console.log(`Modified URL without query params for AliExpress: ${url}`);
+    }
+
     try {
         if (driver == null) {
             driver = await fetchDriver(info.marketplaceQuery);
             await driver.get(url);
         }
-        const {XPATHS, MESSAGES} = info;
+        const { XPATHS, MESSAGES } = info;
         for (let i = 0; i < XPATHS.length; i++) {
             try {
                 const xpath = XPATHS[i];
@@ -530,6 +541,7 @@ async function evaluateWithInfo(url, info, customDriver) {
     }
     return false;
 }
+
 
 async function fetchDriver(marketplace) {
     return await fetchDriver(marketplace, null);
